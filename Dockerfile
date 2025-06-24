@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.22 as builder
+FROM golang:1.24 as builder
 
 # Copy local package data to the container's workspace.
 WORKDIR /app
