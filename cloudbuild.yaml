@@ -48,3 +48,6 @@ steps:
       - '1'
 images:
   - 'gcr.io/$PROJECT_ID/hopper:$COMMIT_SHA'
+logsBucket: 'gs://cloudbuild-log-$PROJECT_ID'
+options:
+  logging: GCS_ONLY
