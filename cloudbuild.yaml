@@ -1,0 +1,50 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/hopper:$COMMIT_SHA', '.']
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/hopper:$COMMIT_SHA']
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'hopper'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/hopper:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1' # You can change this to your preferred region
+      - '--platform'
+      - 'managed'
+      - '--service-account'
+      - 'hopper@$PROJECT_ID.iam.gserviceaccount.com'
+      - '--port'
+      - '8080'
+      - '--allow-unauthenticated' # Allows public access, remove if not needed
+      - '--project'
+      - '$PROJECT_ID'
+      - '--set-env-vars'
+      - 'PORT=8080'
+      - '--ingress'
+      - 'all'
+      - '--cpu-boost' # Use default CPU boost settings
+      - '--max-instances'
+      - 'default' # Use default max instances
+      - '--min-instances'
+      - 'default' # Use default min instances
+      - '--concurrency'
+      - 'default' # Use default concurrency
+      - '--timeout'
+      - 'default' # Use default timeout
+      - '--memory'
+      - 'default' # Use default memory
+      - '--cpu'
+      - 'default' # Use default CPU
+      - '--no-cpu-boost' # Explicitly disable CPU boost if not needed, otherwise remove this line
+      # For gen1 environment
+      - '--generation'
+      - '1'
+images:
+  - 'gcr.io/$PROJECT_ID/hopper:$COMMIT_SHA'
