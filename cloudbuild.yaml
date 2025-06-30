@@ -20,8 +20,6 @@ steps:
       - 'managed'
       - '--service-account'
       - 'hopper@$PROJECT_ID.iam.gserviceaccount.com'
-      - '--port'
-      - '8080'
       - '--allow-unauthenticated' # Allows public access, remove if not needed
       - '--project'
       - '$PROJECT_ID'
