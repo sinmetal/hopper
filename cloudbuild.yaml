@@ -32,7 +32,7 @@ steps:
       - '--concurrency'
       - '40'
       - '--memory'
-      - '256MiB'
+      - '256Mi'
       - '--cpu'
       - '0.5'
       - '--execution-environment'
