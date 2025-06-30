@@ -40,7 +40,7 @@ steps:
       - '--cpu'
       - '0.5'
       - '--execution-environment'
-      - 'gen11'
+      - 'gen1'
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/hopper/hopper:$COMMIT_SHA'
 logsBucket: 'gs://cloudbuild-log-$PROJECT_ID'
