@@ -10,7 +10,7 @@ COPY . .
 
 # Build the binary.
 # -o /app/server: Output the binary to /app/server
-RUN CGO_ENABLED=0 GOOS=linux go build -v -o server .
+RUN CGO_ENABLED=0 GOOS=linux go build -v -o server ./cmd/server
 
 # Use a distroless image to run the compiled binary.
 FROM gcr.io/distroless/static-debian11
