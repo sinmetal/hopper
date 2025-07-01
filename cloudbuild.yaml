@@ -1,0 +1,44 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/hopper/hopper:$COMMIT_SHA', '.']
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/hopper/hopper:$COMMIT_SHA']
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'hopper'
+      - '--image'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/hopper/hopper:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1' # You can change this to your preferred region
+      - '--platform'
+      - 'managed'
+      - '--service-account'
+      - 'hopper@$PROJECT_ID.iam.gserviceaccount.com'
+      - '--allow-unauthenticated' # Allows public access, remove if not needed
+      - '--project'
+      - '$PROJECT_ID'
+      - '--ingress'
+      - 'all'
+      - '--max-instances'
+      - '1'
+      - '--min-instances'
+      - '0'
+      - '--concurrency'
+      - '40'
+      - '--memory'
+      - '256Mi'
+      - '--cpu'
+      - '1'
+      - '--execution-environment'
+      - 'gen1'
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/hopper/hopper:$COMMIT_SHA'
+logsBucket: 'gs://cloudbuild-log-$PROJECT_ID'
+options:
+  logging: GCS_ONLY
