@@ -5,6 +5,7 @@ go 1.24.3
 require (
 	cloud.google.com/go/spanner v1.83.0
 	github.com/google/uuid v1.6.0
+	github.com/sinmetalcraft/gcpbox v1.25.2
 	google.golang.org/api v0.237.0
 )
 

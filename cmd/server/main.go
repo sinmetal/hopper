@@ -9,14 +9,15 @@ import (
 
 	"cloud.google.com/go/spanner"
 	"github.com/sinmetal/hopper"
+	"github.com/sinmetalcraft/gcpbox/metadata/cloudrun"
 )
 
 func main() {
 	ctx := context.Background()
 
-	projectID := os.Getenv("GCP_PROJECT")
-	if projectID == "" {
-		log.Fatal("GCP_PROJECT environment variable must be set.")
+	projectID, err := cloudrun.ProjectID()
+	if err != nil {
+		log.Fatalf("failed to get project id: %v", err)
 	}
 	instanceID := os.Getenv("SPANNER_INSTANCE")
 	if instanceID == "" {
