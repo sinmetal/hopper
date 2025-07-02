@@ -33,14 +33,18 @@ func NewSingersStore(ctx context.Context, sc *spanner.Client) (*SingersStore, er
 	}, nil
 }
 
-// Insert inserts a new singer.
-func (s *SingersStore) Insert(ctx context.Context, singer *Singer) error {
-	singer.SingerID = uuid.New().String()
-	m, err := spanner.InsertStruct(SingersTableName, singer)
-	if err != nil {
-		return fmt.Errorf("failed to create insert struct: %w", err)
+// Insert inserts new singers.
+func (s *SingersStore) BatchInsert(ctx context.Context, singers []*Singer) error {
+	var ms []*spanner.Mutation
+	for _, singer := range singers {
+		singer.SingerID = uuid.New().String()
+		m, err := spanner.InsertStruct(SingersTableName, singer)
+		if err != nil {
+			return fmt.Errorf("failed to create insert struct: %w", err)
+		}
+		ms = append(ms, m)
 	}
-	_, err = s.sc.Apply(ctx, []*spanner.Mutation{m})
+	_, err := s.sc.Apply(ctx, ms)
 	if err != nil {
 		return fmt.Errorf("failed to apply mutation: %w", err)
 	}
