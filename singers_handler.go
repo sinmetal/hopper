@@ -3,6 +3,7 @@ package hopper
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -28,8 +29,9 @@ type randomInsertRequest struct {
 // RandomInsert is POST /singers/random-insert
 func (h *SingersHandler) RandomInsert(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		log.Printf("method not allowed. got %s", r.Method)
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		msg := fmt.Sprintf("method not allowed. got %s", r.Method)
+		log.Println(msg)
+		http.Error(w, msg, http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -37,15 +39,17 @@ func (h *SingersHandler) RandomInsert(w http.ResponseWriter, r *http.Request) {
 
 	var body randomInsertRequest
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		log.Printf("failed to decode request body. %s", err)
-		http.Error(w, "bad request", http.StatusBadRequest)
+		msg := fmt.Sprintf("failed to decode request body. %s", err)
+		log.Println(msg)
+		http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
 
 	if body.Count < 1 {
-		log.Printf("count must be greater than 0. got %d", body.Count)
-		http.Error(w, "count must be greater than 0", http.StatusBadRequest)
+		msg := fmt.Sprintf("count must be greater than 0. got %d", body.Count)
+		log.Println(msg)
+		http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
 
@@ -53,8 +57,9 @@ func (h *SingersHandler) RandomInsert(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < body.Count; i++ {
 		u, err := uuid.NewRandom()
 		if err != nil {
-			log.Printf("failed to generate uuid. %s", err)
-			http.Error(w, "internal server error", http.StatusInternalServerError)
+			msg := fmt.Sprintf("failed to generate uuid. %s", err)
+			log.Println(msg)
+			http.Error(w, msg, http.StatusInternalServerError)
 			return
 		}
 		singers[i] = &Singer{
@@ -65,8 +70,9 @@ func (h *SingersHandler) RandomInsert(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.Store.BatchInsert(ctx, singers); err != nil {
-		log.Printf("failed to insert singers. %s", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		msg := fmt.Sprintf("failed to insert singers. %s", err)
+		log.Println(msg)
+		http.Error(w, msg, http.StatusInternalServerError)
 		return
 	}
 
