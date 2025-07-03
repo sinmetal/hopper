@@ -16,8 +16,6 @@ steps:
       - 'us-central1-docker.pkg.dev/$PROJECT_ID/hopper/hopper:$COMMIT_SHA'
       - '--region'
       - 'us-central1' # You can change this to your preferred region
-      - '--platform'
-      - 'managed'
       - '--service-account'
       - 'hopper@$PROJECT_ID.iam.gserviceaccount.com'
       - '--allow-unauthenticated' # Allows public access, remove if not needed
