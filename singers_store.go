@@ -7,6 +7,7 @@ import (
 
 	"cloud.google.com/go/spanner"
 	"github.com/google/uuid"
+	"go.opencensus.io/trace"
 	"google.golang.org/api/iterator"
 )
 
@@ -38,6 +39,9 @@ func NewSingersStore(ctx context.Context, sc *spanner.Client) (*SingersStore, er
 
 // BatchInsert inserts new singers.
 func (s *SingersStore) BatchInsert(ctx context.Context, singers []*Singer) error {
+	ctx, span := trace.StartSpan(ctx, "SingersStore.BatchInsert")
+	defer span.End()
+
 	var ms []*spanner.Mutation
 	for _, singer := range singers {
 		singer.SingerID = uuid.New().String()
@@ -58,6 +62,9 @@ func (s *SingersStore) BatchInsert(ctx context.Context, singers []*Singer) error
 
 // Get returns a singer by primary key.
 func (s *SingersStore) Get(ctx context.Context, id string) (*Singer, error) {
+	ctx, span := trace.StartSpan(ctx, "SingersStore.Get")
+	defer span.End()
+
 	row, err := s.sc.Single().ReadRow(ctx, SingersTableName, spanner.Key{id}, []string{"SingerID", "FirstName", "LastName", "CreatedAt", "UpdatedAt"})
 	if err != nil {
 		return nil, fmt.Errorf("failed to read row: %w", err)
@@ -71,6 +78,9 @@ func (s *SingersStore) Get(ctx context.Context, id string) (*Singer, error) {
 
 // List returns all singers.
 func (s *SingersStore) List(ctx context.Context) ([]*Singer, error) {
+	ctx, span := trace.StartSpan(ctx, "SingersStore.List")
+	defer span.End()
+
 	iter := s.sc.Single().Read(ctx, SingersTableName, spanner.AllKeys(), []string{"SingerID", "FirstName", "LastName", "CreatedAt", "UpdatedAt"})
 	defer iter.Stop()
 

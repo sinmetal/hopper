@@ -9,7 +9,9 @@ import (
 
 	"cloud.google.com/go/spanner"
 	"github.com/sinmetal/hopper"
+	"github.com/sinmetal/hopper/internal/trace"
 	"github.com/sinmetalcraft/gcpbox/metadata/cloudrun"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func main() {
@@ -19,6 +21,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get project id: %v", err)
 	}
+
+	shutdown, err := trace.InitTracer(projectID)
+	if err != nil {
+		log.Fatalf("failed to init tracer: %v", err)
+	}
+	defer shutdown()
+
 	instanceID := os.Getenv("SPANNER_INSTANCE")
 	if instanceID == "" {
 		log.Fatal("SPANNER_INSTANCE environment variable must be set.")
@@ -42,10 +51,10 @@ func main() {
 
 	sh := hopper.NewSingersHandler(ss)
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.Handle("/", otelhttp.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Hello World")
-	})
-	http.HandleFunc("/singers/random-insert", sh.RandomInsert)
+	}), "root"))
+	http.Handle("/singers/random-insert", otelhttp.NewHandler(http.HandlerFunc(sh.RandomInsert), "random-insert"))
 
 	port := os.Getenv("PORT")
 	if port == "" {
