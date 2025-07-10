@@ -38,7 +38,7 @@ steps:
       - '--execution-environment'
       - 'gen1'
       - '--update-env-vars'
-      - 'SPANNER_INSTANCE=merpay-sponsored-instance,SPANNER_DATABASE=sinmetal'
+      - 'SPANNER_PROJECT_ID=gcpug-public-spanner,SPANNER_INSTANCE=merpay-sponsored-instance,SPANNER_DATABASE=sinmetal'
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/hopper/hopper:$COMMIT_SHA'
 logsBucket: 'gs://cloudbuild-log-$PROJECT_ID'
