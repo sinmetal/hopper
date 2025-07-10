@@ -1,7 +1,6 @@
 package hopper
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -27,13 +26,13 @@ type randomInsertRequest struct {
 
 // RandomInsert is POST /singers/random-insert
 func (h *SingersHandler) RandomInsert(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	if r.Method != http.MethodPost {
 		log.Printf("method not allowed. got %s", r.Method)
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
-	ctx := context.Background()
 
 	var body randomInsertRequest
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
