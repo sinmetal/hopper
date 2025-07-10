@@ -7,6 +7,8 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/sinmetal/hopper/internal/trace"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 // SingersHandler is singers table handler
@@ -79,7 +81,8 @@ type randomUpdateRequest struct {
 
 // RandomUpdate is POST /singers/random-update
 func (h *SingersHandler) RandomUpdate(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	ctx, span := trace.StartSpan(r.Context(), "SingersHandler.RandomUpdate")
+	defer span.End()
 
 	if r.Method != http.MethodPost {
 		log.Printf("method not allowed. got %s", r.Method)
@@ -93,6 +96,7 @@ func (h *SingersHandler) RandomUpdate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
+	span.SetAttributes(attribute.Int("oldDay", body.OldDay))
 	defer r.Body.Close()
 
 	if body.OldDay < 1 {
