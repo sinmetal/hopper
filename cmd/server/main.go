@@ -17,6 +17,8 @@ import (
 func main() {
 	ctx := context.Background()
 
+	spanner.EnableOpenTelemetryMetrics()
+
 	projectID, err := cloudrun.ProjectID()
 	if err != nil {
 		log.Fatalf("failed to get project id: %v", err)
