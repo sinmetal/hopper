@@ -11,6 +11,8 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+var tracer = otel.Tracer("github.com/sinmetal/hopper")
+
 // batchWriteSpansName is the name of the span to be filtered.
 const batchWriteSpansName = "google.devtools.cloudtrace.v2.TraceService/BatchWriteSpans"
 
@@ -61,4 +63,8 @@ func InitTracer(projectID string) (func(), error) {
 			log.Printf("Error shutting down tracer provider: %v", err)
 		}
 	}, nil
+}
+
+func StartSpan(ctx context.Context, spanName string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+	return tracer.Start(ctx, spanName, opts...)
 }

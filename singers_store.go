@@ -7,7 +7,7 @@ import (
 
 	"cloud.google.com/go/spanner"
 	"github.com/google/uuid"
-	"go.opencensus.io/trace"
+	"github.com/sinmetal/hopper/internal/trace"
 	"google.golang.org/api/iterator"
 )
 
