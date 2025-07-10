@@ -28,6 +28,11 @@ func main() {
 	}
 	defer shutdown()
 
+	spannerProjectID := os.Getenv("SPANNER_PROJECT_ID")
+	if spannerProjectID == "" {
+		log.Fatal("SPANNER_PROJECT_ID environment variable must be set.")
+	}
+
 	instanceID := os.Getenv("SPANNER_INSTANCE")
 	if instanceID == "" {
 		log.Fatal("SPANNER_INSTANCE environment variable must be set.")
@@ -37,7 +42,7 @@ func main() {
 		log.Fatal("SPANNER_DATABASE environment variable must be set.")
 	}
 
-	dsn := fmt.Sprintf("projects/%s/instances/%s/databases/%s", projectID, instanceID, databaseID)
+	dsn := fmt.Sprintf("projects/%s/instances/%s/databases/%s", spannerProjectID, instanceID, databaseID)
 	sc, err := spanner.NewClient(ctx, dsn)
 	if err != nil {
 		log.Fatal(err)
