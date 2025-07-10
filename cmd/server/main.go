@@ -62,6 +62,7 @@ func main() {
 		fmt.Fprintf(w, "Hello World")
 	}), "root"))
 	http.Handle("/singers/random-insert", otelhttp.NewHandler(http.HandlerFunc(sh.RandomInsert), "random-insert"))
+	http.Handle("/singers/random-update", otelhttp.NewHandler(http.HandlerFunc(sh.RandomUpdate), "random-update"))
 
 	port := os.Getenv("PORT")
 	if port == "" {
