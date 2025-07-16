@@ -101,3 +101,68 @@ func (s *SingersStore) List(ctx context.Context) ([]*Singer, error) {
 	}
 	return singers, nil
 }
+
+// ListByCreatedAt returns singers created before the specified days.
+func (s *SingersStore) ListByCreatedAt(ctx context.Context, oldDay int, limit int) ([]*Singer, error) {
+	ctx, span := trace.StartSpan(ctx, "SingersStore.ListByCreatedAt")
+	defer span.End()
+
+	stmt := spanner.NewStatement(`
+		SELECT
+			SingerID,
+			FirstName,
+			LastName,
+			CreatedAt,
+			UpdatedAt
+		FROM
+			Singers
+		WHERE
+			CreatedAt < @createdAt
+		ORDER BY CreatedAt DESC
+		LIMIT @limit
+	`)
+	var filterCreatedAt = time.Now()
+	if oldDay != 0 {
+		filterCreatedAt = filterCreatedAt.AddDate(0, 0, -oldDay)
+	}
+	stmt.Params["createdAt"] = filterCreatedAt
+	stmt.Params["limit"] = limit
+
+	iter := s.sc.Single().Query(ctx, stmt)
+	defer iter.Stop()
+
+	var singers []*Singer
+	for {
+		row, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to get next row: %w", err)
+		}
+		var singer Singer
+		if err := row.ToStruct(&singer); err != nil {
+			return nil, fmt.Errorf("failed to convert row to struct: %w", err)
+		}
+		singers = append(singers, &singer)
+	}
+	return singers, nil
+}
+
+// Update updates a singer.
+func (s *SingersStore) Update(ctx context.Context, singer *Singer) error {
+	ctx, span := trace.StartSpan(ctx, "SingersStore.Update")
+	defer span.End()
+
+	m := spanner.UpdateMap(SingersTableName, map[string]interface{}{
+		"SingerID":  singer.SingerID,
+		"FirstName": singer.FirstName,
+		"LastName":  singer.LastName,
+		"UpdatedAt": spanner.CommitTimestamp,
+	})
+	_, err := s.sc.Apply(ctx, []*spanner.Mutation{m})
+	if err != nil {
+		return fmt.Errorf("failed to apply mutation: %w", err)
+	}
+	return nil
+}

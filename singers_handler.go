@@ -3,9 +3,12 @@ package hopper
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/sinmetal/hopper/internal/trace"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 // SingersHandler is singers table handler
@@ -70,4 +73,70 @@ func (h *SingersHandler) RandomInsert(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+type randomUpdateRequest struct {
+	OldDay int `json:"oldDay"`
+}
+
+// RandomUpdate is POST /singers/random-update
+func (h *SingersHandler) RandomUpdate(w http.ResponseWriter, r *http.Request) {
+	ctx, span := trace.StartSpan(r.Context(), "SingersHandler.RandomUpdate")
+	defer span.End()
+
+	if r.Method != http.MethodPost {
+		log.Printf("method not allowed. got %s", r.Method)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var body randomUpdateRequest
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Printf("failed to decode request body. %s", err)
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	const oldDayAttributeKey = "oldDay"
+	switch body.OldDay {
+	case 0:
+		span.SetAttributes(attribute.String(oldDayAttributeKey, "zero"))
+	case 1:
+		span.SetAttributes(attribute.String(oldDayAttributeKey, "one"))
+	case 10:
+		span.SetAttributes(attribute.String(oldDayAttributeKey, "ten"))
+	case 20:
+		span.SetAttributes(attribute.String(oldDayAttributeKey, "twenty"))
+	}
+
+	if body.OldDay < 0 {
+		log.Printf("oldDay must be greater than or equal to 0. got %d", body.OldDay)
+		http.Error(w, "oldDay must be greater than or equal to 0", http.StatusBadRequest)
+		return
+	}
+
+	singers, err := h.Store.ListByCreatedAt(ctx, body.OldDay, 10)
+	if err != nil {
+		log.Printf("failed to list singers. %s", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	if len(singers) == 0 {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	target := singers[rand.Intn(len(singers))]
+	target.FirstName = uuid.New().String()
+	target.LastName = uuid.New().String()
+
+	if err := h.Store.Update(ctx, target); err != nil {
+		log.Printf("failed to update singer. %s", err)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
