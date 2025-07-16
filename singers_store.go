@@ -117,10 +117,15 @@ func (s *SingersStore) ListByCreatedAt(ctx context.Context, oldDay int, limit in
 		FROM
 			Singers
 		WHERE
-			CreatedAt < @created_at
+			CreatedAt < @createdAt
+		ORDER BY CreatedAt DESC
 		LIMIT @limit
 	`)
-	stmt.Params["created_at"] = time.Now().AddDate(0, 0, -oldDay)
+	var filterCreatedAt = time.Now()
+	if oldDay != 0 {
+		filterCreatedAt = filterCreatedAt.AddDate(0, 0, -oldDay)
+	}
+	stmt.Params["createdAt"] = filterCreatedAt
 	stmt.Params["limit"] = limit
 
 	iter := s.sc.Single().Query(ctx, stmt)
