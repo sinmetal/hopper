@@ -110,9 +110,9 @@ func (h *SingersHandler) RandomUpdate(w http.ResponseWriter, r *http.Request) {
 		span.SetAttributes(attribute.String(oldDayAttributeKey, "twenty"))
 	}
 
-	if body.OldDay < 1 {
-		log.Printf("oldDay must be greater than 0. got %d", body.OldDay)
-		http.Error(w, "oldDay must be greater than 0", http.StatusBadRequest)
+	if body.OldDay < 0 {
+		log.Printf("oldDay must be greater than or equal to 0. got %d", body.OldDay)
+		http.Error(w, "oldDay must be greater than or equal to 0", http.StatusBadRequest)
 		return
 	}
 
