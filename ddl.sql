@@ -10,6 +10,9 @@ CREATE TABLE Singers (
 PRIMARY KEY (SingerID),
 OPTIONS (locality_group = 'spill_to_hdd');
 
+CREATE INDEX Singers_CreatedAt_desc
+ON Singers(CreatedAt DESC) OPTIONS (locality_group = 'spill_to_hdd');
+
 CREATE TABLE Albums (
     SingerID STRING(MAX) NOT NULL,
     AlbumID STRING(MAX) NOT NULL,
